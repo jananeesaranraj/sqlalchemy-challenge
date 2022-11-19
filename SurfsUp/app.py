@@ -32,10 +32,18 @@ app = Flask(__name__)
 @app.route("/")
 def Welcome():
     return(
-        f"Available Routes:<br/>"
+        f"<b>Welcome To Honululu Climate API</b><br/>"
+        f"{'*'*40}<br/>"
+        f"<b>Available Routes:</b><br/>"
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
-        f"/api/v1.0/tobs"
+        f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/start=<YYYY-MM-DD><br/>"
+        f"/api/v1.0/start=<YYYY-MM-DD>/end=<YYYY-MM-DD><br/>"
+        f"{'-'*60}<br/>"
+        f"<b>Note:</b><br/>"
+        f"1.Route <b>tobs</b> will show only the result of the most active station.<br/>"
+        f"2.The <b>date format</b> will be YYYY-MM-DD"
     )
 @app.route("/api/v1.0/precipitation")
 def precipitation():
@@ -80,7 +88,7 @@ def tobs():
     temp_list =list(np.ravel(temp_data))
     return jsonify(temp_list)
 
-@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/start=<start>")
 def start_date(start):
     session = Session(engine)
     start_date = dt.datetime.strptime(start, '%Y-%m-%d')
@@ -96,14 +104,15 @@ def start_date(start):
     temp_dict["TAVG"] = avg_temp
     return jsonify(temp_dict)
 
-@app.route("/api/v1.0/<start>/<end>")
+@app.route("/api/v1.0/start=<start>/end=<end>")
 def start_end(start,end):
     session = Session(engine)
-    min_temp =session.query(func.min(Measurement.tobs)).filter(Measurement.date >= start).\
+    start_date = dt.datetime.strptime(start, '%Y-%m-%d')
+    min_temp =session.query(func.min(Measurement.tobs)).filter(Measurement.date >= start_date).\
               filter(Measurement.date <= end).scalar()
-    max_temp = session.query(func.max(Measurement.tobs)).filter(Measurement.date >= start).\
+    max_temp = session.query(func.max(Measurement.tobs)).filter(Measurement.date >= start_date).\
               filter(Measurement.date <= end).scalar()
-    avg_temp = session.query(func.avg(Measurement.tobs)).filter(Measurement.date >= start).\
+    avg_temp = session.query(func.avg(Measurement.tobs)).filter(Measurement.date >= start_date).\
                filter(Measurement.date <= end).scalar()
     session.close()
     if min_temp is None:
