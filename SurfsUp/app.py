@@ -80,6 +80,39 @@ def tobs():
     temp_list =list(np.ravel(temp_data))
     return jsonify(temp_list)
 
+@app.route("/api/v1.0/<start>")
+def start_date(start):
+    session = Session(engine)
+    start_date = dt.datetime.strptime(start, '%Y-%m-%d')
+    min_temp =session.query(func.min(Measurement.tobs)).filter(Measurement.date >= start_date).scalar()
+    max_temp = session.query(func.max(Measurement.tobs)).filter(Measurement.date >= start_date).scalar()
+    avg_temp = session.query(func.avg(Measurement.tobs)).filter(Measurement.date >= start_date).scalar()
+    session.close()
+    if min_temp is None:
+            return jsonify({"error": "Start date not found."}), 404
+    temp_dict={}
+    temp_dict["TMIN"] = min_temp
+    temp_dict["TMAX"] = max_temp
+    temp_dict["TAVG"] = avg_temp
+    return jsonify(temp_dict)
+
+@app.route("/api/v1.0/<start>/<end>")
+def start_end(start,end):
+    session = Session(engine)
+    min_temp =session.query(func.min(Measurement.tobs)).filter(Measurement.date >= start).\
+              filter(Measurement.date <= end).scalar()
+    max_temp = session.query(func.max(Measurement.tobs)).filter(Measurement.date >= start).\
+              filter(Measurement.date <= end).scalar()
+    avg_temp = session.query(func.avg(Measurement.tobs)).filter(Measurement.date >= start).\
+               filter(Measurement.date <= end).scalar()
+    session.close()
+    if min_temp is None:
+            return jsonify({"error": "Start date not found."}), 404
+    temp_dict={}
+    temp_dict["TMIN"] = min_temp
+    temp_dict["TMAX"] = max_temp
+    temp_dict["TAVG"] = avg_temp
+    return jsonify(temp_dict)
 
 
 if __name__ == '__main__':
