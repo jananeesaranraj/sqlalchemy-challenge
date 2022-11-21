@@ -20,7 +20,7 @@ Now that you’ve completed your initial analysis, you’ll design a Flask API b
 
     Route: /api/v1.0/precipitation
 
-    Info.: Daily precipitation data between January 2010 to August 2017
+    Info.: Daily precipitation data for the last 12 months (23-08-2016 to 23-08-2017)
 
 * Station information
 
